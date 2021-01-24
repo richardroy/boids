@@ -102,12 +102,26 @@ class Boid {
 	}
 
 	show() {
-		strokeWeight(8);
-		stroke(255);
-
+		let triangleSize = 12;
 		strokeWeight(2);
-		fill(0, 0, 0, 0)
+		push();
+		stroke(255);
+		translate(this.position.x, this.position.y);
+		rotate(this.velocity.heading() - radians(90));
+        triangle(
+          -triangleSize,
+          -triangleSize,
+          triangleSize,
+          -triangleSize,
+          0,
+          triangleSize
+        );
+		pop();
+
+		stroke(255, 0, 0);
 		point(this.position.x, this.position.y);
+
+		fill(0, 0, 0, 0)
 		circle(this.position.x, this.position.y, this.perception * 2)
 	}
 }
