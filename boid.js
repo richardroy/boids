@@ -3,11 +3,13 @@ class Boid {
 		this.id = id;
 		this.position = createVector(random(width), random(height));
 		this.velocity = p5.Vector.random2D();
-		this.velocity.setMag(random(2,4 ));
+		this.velocity.setMag(2);
 		this.acceleration = createVector();
-		this.maxForce = 0.2;
-		this.maxSpeed = 4;
+		this.maxForce = 0.25;
+		this.maxSpeed = 5;
 		this.perception = 50;
+
+		this.wanderAngle = random()*PI*2;;
 	}
 
 	edges() {
@@ -80,6 +82,16 @@ class Boid {
 			steering.setMag(this.maxSpeed)
 			steering.sub(this.velocity);
 			steering.limit(this.maxForce);
+
+			if(this.id == -1) {
+				console.log('**************************')
+				console.log('position: ', this.position)
+				console.log('maxSpeed: ', this.maxSpeed)
+				console.log('velocity: ', this.velocity)
+				console.log('maxForce: ', this.maxForce)
+				console.log('steering: ', steering)
+				console.log('**************************')
+			}
 		}
 
 		return steering
@@ -90,9 +102,12 @@ class Boid {
 		let alignment = this.align(boids);
 		let cohesion = this.cohesion(boids);
 		let seperation = this.seperation(boids);
+		let wander = this.wander();
+
 		this.acceleration.add(alignment.mult(1.0));
-		this.acceleration.add(cohesion.mult(0.8));
-		this.acceleration.add(seperation.mult(1.2));
+		this.acceleration.add(cohesion.mult(1.0));
+		this.acceleration.add(seperation.mult(1.0));
+		this.acceleration.add(wander.mult(0.5));
 	}
 
 	update() {
@@ -101,11 +116,43 @@ class Boid {
 		this.velocity.limit(this.maxSpeed)
 	}
 
+	wander() {
+		let wanderDistance = 10;
+    let wanderRadius = 24;
+    let wanderAngle = 0;
+    let wanderRange = 1;
+
+		// console.log(this.velocity.normalize())
+		let wanderCircle = createVector(this.position.x + this.velocity.copy().normalize().x * 24, this.position.y + this.velocity.copy().normalize().y * 24)
+		// circle(wanderCircle.x, wanderCircle.y, wanderRadius);
+    let wanderPoint = new createVector(wanderCircle.x, wanderCircle.y).rotate(wanderAngle);
+    let rand = p5.Vector.random2D();
+    // console.log(rand.normalize())
+
+		this.wanderAngle = (this.wanderAngle + (random() - 0.5) * 0.5) 
+		let x = cos(this.wanderAngle)*12;
+		let y = sin(this.wanderAngle)*12;
+
+		// line(wanderCircle.x, wanderCircle.y, wanderCircle.x + x, wanderCircle.y + y)
+
+		let steering = createVector(wanderCircle.x + x, wanderCircle.y + y);
+		steering.sub(this.position);
+		steering.setMag(this.maxSpeed)
+		steering.sub(this.velocity);
+		steering.limit(this.maxForce);		
+		return steering;
+	}
+
 	show() {
-		let triangleSize = 12;
+		stroke(255);
+		if (this.id == 0) {
+			stroke(0, 255, 0);
+			// console.log(this.acceleration)
+		}
+
+		let triangleSize = 6;
 		strokeWeight(2);
 		push();
-		stroke(255);
 		translate(this.position.x, this.position.y);
 		rotate(this.velocity.heading() - radians(90));
         triangle(
@@ -122,6 +169,24 @@ class Boid {
 		point(this.position.x, this.position.y);
 
 		fill(0, 0, 0, 0)
-		circle(this.position.x, this.position.y, this.perception * 2)
+
+		stroke(255);
+
+		if(this.acceleration.x != 0 && this.acceleration.y != 0){
+			// line(
+			// 	this.position.x, this.position.y,
+			// 	this.position.x + this.acceleration.x * 100,
+			// 	this.position.y + this.acceleration.y * 100
+			// )
+
+			// line(
+			// 	this.position.x, this.position.y,
+			// 	this.position.x + this.velocity.x * 100,
+			// 	this.position.y + this.velocity.y * 100
+			// )
+
+			// console.log(this.velocity)
+		}
+		// circle(this.position.x, this.position.y, this.perception * 2)
 	}
 }
