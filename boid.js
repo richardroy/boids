@@ -1,11 +1,13 @@
 class Boid {
-	constructor() {
+	constructor(id) {
+		this.id = id;
 		this.position = createVector(random(width), random(height));
 		this.velocity = p5.Vector.random2D();
 		this.velocity.setMag(random(2,4 ));
 		this.acceleration = createVector();
 		this.maxForce = 0.2;
 		this.maxSpeed = 4;
+		this.perception = 50;
 	}
 
 	edges() {
@@ -21,12 +23,11 @@ class Boid {
 	}
 
 	align(boids) {
-		let perception = 50;
 		let steering = createVector(); 
 		let total = 0;
 		for(let other of boids) {
 			let d = dist(this.position.x, this.position.y, other.position.x, other.position.y)
-			if(other != this && d < perception) {
+			if(other != this && d < this.perception) {
 				steering.add(other.velocity);
 				total += 1
 			}
@@ -42,12 +43,11 @@ class Boid {
 	}
 
 	seperation(boids) {
-		let perception = 50;
 		let steering = createVector(); 
 		let total = 0;
 		for(let other of boids) {
 			let d = dist(this.position.x, this.position.y, other.position.x, other.position.y)
-			if(other != this && d < perception) {
+			if(other != this && d < this.perception) {
 				let diff = p5.Vector.sub(this.position, other.position);
 				diff.div(d)
 				steering.add(diff);
@@ -65,12 +65,11 @@ class Boid {
 	}
 
 	cohesion(boids) {
-		let perception = 50;
 		let steering = createVector(); 
 		let total = 0;
 		for(let other of boids) {
 			let d = dist(this.position.x, this.position.y, other.position.x, other.position.y)
-			if(other != this && d < perception) {
+			if(other != this && d < this.perception) {
 				steering.add(other.position);
 				total += 1
 			}
@@ -91,9 +90,9 @@ class Boid {
 		let alignment = this.align(boids);
 		let cohesion = this.cohesion(boids);
 		let seperation = this.seperation(boids);
-		this.acceleration.add(alignment);
-		this.acceleration.add(cohesion);
-		this.acceleration.add(seperation);
+		this.acceleration.add(alignment.mult(1.0));
+		this.acceleration.add(cohesion.mult(0.8));
+		this.acceleration.add(seperation.mult(1.2));
 	}
 
 	update() {
@@ -105,6 +104,10 @@ class Boid {
 	show() {
 		strokeWeight(8);
 		stroke(255);
+
+		strokeWeight(2);
+		fill(0, 0, 0, 0)
 		point(this.position.x, this.position.y);
+		circle(this.position.x, this.position.y, this.perception * 2)
 	}
 }
